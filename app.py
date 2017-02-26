@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, escape, Response
 from flaskext.mysql import MySQL
+import json
  
 mysql = MySQL()
 app = Flask(__name__)
@@ -26,6 +27,7 @@ def login():
         if error is None:
             session['username'] = username
             session['id'] = list(data)[0]
+            session['fname'] = list(data)[1]
             return redirect(url_for('home'))
         else:
             return render_template("login.html", error = error)
@@ -36,11 +38,20 @@ def home():
         if 'username' in session:
             username_session = escape(session['username']).capitalize()
             username_id = escape(session['id'])
-            return render_template('home.html', session_user_name=username_session, session_id=username_id)
+            fname = escape(session['fname'])
+            return render_template('home.html', fname=fname, username=username_session, userid=username_id)
         else:
             return redirect(url_for('login'))
     elif(request.method == "POST"):
         error = None
+
+@app.route("/cuisines", methods=['GET'])
+def cuisines():
+    if(request.method == "GET"):
+        cursor.execute("SELECT * from categories")
+        data = cursor.fetchall()
+        print json.dumps(dict(data))
+        return Response(json.dumps(dict(data)), mimetype='application/json')
 
 @app.route('/logout')
 def logout():
@@ -75,7 +86,6 @@ def ureg():
                 return redirect(url_for('login'))
             else:
                 data = {}
-                data['to_show'] = True
                 data["error"] = "Username already exists"
                 return render_template("user_register.html", **data)
 
