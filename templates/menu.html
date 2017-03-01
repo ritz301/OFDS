@@ -76,42 +76,71 @@
   </ul>
 </div>
 </nav>
-<div class="container" style="padding-top: 50px;">
+<div class="container" style="padding-top: 10px;">
     <div class="panel-heading" style="text-align: center;">
-      <h3 class="text-primary" style="color: black;"><i class="fa fa-cutlery" aria-hidden="true"></i> Choose a category</h3>
+      <h3 class="text-primary" style="color: black;"><i class="fa fa-cutlery" aria-hidden="true"></i>&nbsp;&nbsp;{{res_name}}</h3>
     </div>
-    <div class="panel panel-default" style="text-align: center;">
-        <div class="row" style="padding: 10px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
+    <div class="panel panel-default" style="max-height: 420px; overflow-x: hidden; overflow-y: auto;">
+        <div class="row">
+            <div class="input-field col s4 offset-s4">
+                <select id="catdropdown">
+                  <option value="" disabled selected>Choose a category</option>
+                </select>
+            </div>
         </div>
-        <div class="row" style="padding: 10px; margin-top: -100px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
-        </div>
-        <div class="row"><br></div>
+        <table id="content" class="striped centered responsive-table">
+        <thead>
+          <tr>
+              <th data-field="name">Name</th>
+              <th data-field="price">Price</th>
+          </tr>
+        </thead>
+        <tbody id="tcontent">
+            <!-- Table content          -->
+        </tbody>
+        </table>
     </div>
 </div>
 </form> 
 </div>
 </body>
 <script type="text/javascript">
-    $.get("/cuisines", function( data ) {
-        var values = [], keys = [];
-        $.each(data, function(key,value){
-            keys.push(key);
-            values.push(value);
+    $(document).ready(function() {
+        var j = 0;
+        var cid, cname, name, price, prev, optag, menu;
+        cid = [];
+        name = [];
+        price = [];
+        cname = [];
+        prev = "";
+        $.get("/cuisines/{{cuisine_id}}/{{res_uname}}", function( data ) {
+            menu = data;
+            for (i = 0; i < data.length; i++) {
+                if(prev != data[i][5]){
+                    cid.push(i);
+                    cname.push(data[i][5]);
+                    j++;
+                }
+                name[i] = data[i][2];
+                price[i] = data[i][3];
+                prev = data[i][5];
+            }
+            cid.push(i);
+            for(i = 0; i < j; i++){
+                optag = "<option value="+i+">"+cname[i]+"</option>";
+                $("#catdropdown").append(optag);
+            }
+            $('select').material_select();
+            $("#content").append('<div class="row"><br></div>');
         });
-        var i = 0;
-        $('.grid').each(function() {
-            $(this).html(values[i]);
-            $(this).attr("href", "/home/cuisines/"+keys[i]); 
-            i++;
-        });
+        $("#catdropdown").on('change', function() {
+            var p = parseInt($('option:selected', this).val()), trow, k;
+            $("#tcontent").find("tr").remove();
+            for(k = cid[p]; k < cid[p+1]; k++){
+                trow = "<tr><td>"+ menu[k][2] +"</td><td>"+ menu[k][3] +"</td></tr>";
+                $("#tcontent").append(trow);
+            }
+        });    
     });
 </script>
 </html>
