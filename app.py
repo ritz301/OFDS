@@ -11,7 +11,98 @@ app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 db = mysql.connect()
 cursor = db.cursor()
+
+@app.route("/deleteitem", methods=['POST'])
+def delitem():
+    if request.method == "POST":
+        if 'username' in session:
+            k = request.form['K']
+            cursor.execute(("DELETE FROM `menu` WHERE `menu_id` = %s"),(k))
+            db.commit()
+            return "Item successfully removed"
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/additem", methods=['POST'])
+def additem():
+    if request.method == "POST":
+        if 'username' in session:
+            username = escape(session['username'])
+            iname = request.form['iname']
+            iprice = request.form['iprice']
+            cat = request.form['cat']
+            type1 = request.form['group1']
+            cursor.execute(("INSERT into `menu` (`username`,`name`,`price`,`type`,`category`) VALUES (%s,%s,%s,%s,%s)"),(username, iname, iprice, type1, cat))
+            db.commit()
+            username_id = escape(session['id'])
+            name = escape(session['name'])
+            return render_template('rhome.html', rname=name, username=username, userid=username_id, error="Item successfully added")
+        else:
+            return redirect(url_for('login'))
  
+@app.route("/r", methods=['GET'])
+def r():
+    if request.method == "GET":
+        if 'username' in session:
+            data = []
+            data.append(session['username']);
+            data.append(session['name']);
+            data.append(session['address']);
+            return Response(json.dumps(data), mimetype='application/json')
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/rhome", methods=['GET', 'POST'])
+def rhome():
+    if request.method == "GET":
+        if 'username' in session:
+            username_session = escape(session['username']).capitalize()
+            username_id = escape(session['id'])
+            name = escape(session['name'])
+            return render_template('rhome.html', rname=name, username=username_session, userid=username_id)
+        else:
+            return redirect(url_for('login'))
+    elif request.method == "POST":
+        error = None
+
+@app.route("/rhome/orders", methods=['GET', 'POST'])
+def orders():
+    if request.method == "GET":
+        if 'username' in session:
+            username_session = escape(session['username'])
+            username_id = escape(session['id'])
+            name = escape(session['name'])
+            return render_template('orders.html', rname=name, username=username_session, userid=username_id)
+        else:
+            return redirect(url_for('login'))
+    elif request.method == "POST":
+        error = None
+
+@app.route("/orders", methods=['GET'])
+def getOrders():
+    if request.method == "GET":
+        if 'username' in session:
+            r_uname = escape(session['username'])
+            cursor.execute(("SELECT * from `order` WHERE `res_uname` = %s"), (r_uname))
+            data = cursor.fetchall()
+            data2 = []
+            for t in data:
+                cursor.execute(("SELECT * from `order_details` WHERE `order_id` = %s"), (list(t)[5]))
+                temp = cursor.fetchall()
+                f = []
+                x = list(temp)
+                cursor1 = db.cursor()
+                cursor1.execute(("SELECT `user_id` from `order` WHERE `order_id` = %s"),(list(t)[5]))
+                rname = list(cursor1.fetchone())[0]
+                for r in x:
+                    y = list(r)
+                    y.append(rname)
+                    f.append(y)
+                data2.append(f)
+            return Response(json.dumps(data2), mimetype='application/json')
+        else:
+            return redirect(url_for('login'))
+
 @app.route("/", methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
@@ -20,21 +111,37 @@ def login():
         error = None
         username = request.form['username']
         password = request.form['password']
-        cursor.execute(("SELECT * from users where username=%s AND password=%s"), (username, password))
-        data = cursor.fetchone()
-        if data is None:
-            error = "Invalid Credentials"
-        if error is None:
-            session['username'] = username
-            session['id'] = list(data)[0]
-            session['fname'] = list(data)[1]
-            return redirect(url_for('home'))
+        selected = request.form['group1']
+        if selected == "1":
+            print "user"
+            cursor.execute(("SELECT * from users where username=%s AND password=%s"), (username, password))
+            data = cursor.fetchone()
+            if data is None:
+                error = "Invalid Credentials"
+            if error is None:
+                session['username'] = username
+                session['id'] = list(data)[0]
+                session['fname'] = list(data)[1]
+                return redirect(url_for('home'))
+            else:
+                return render_template("login.html", error = error)
         else:
-            return render_template("login.html", error = error)
+            print "res"
+            cursor.execute(("SELECT * from restaurants where username=%s AND password=%s"), (username, password))
+            data = cursor.fetchone()
+            if data is None:
+                error = "Invalid Credentials"
+            if error is None:
+                session['username'] = username
+                session['name'] = list(data)[2]
+                session['address'] = list(data)[3]
+                return redirect(url_for('rhome'))
+            else:
+                return render_template("login.html", error = error)
 
 @app.route("/home", methods=['GET', 'POST'])
 def home():
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             username_session = escape(session['username']).capitalize()
             username_id = escape(session['id'])
@@ -42,12 +149,12 @@ def home():
             return render_template('home.html', fname=fname, username=username_session, userid=username_id)
         else:
             return redirect(url_for('login'))
-    elif(request.method == "POST"):
+    elif request.method == "POST":
         error = None
 
 @app.route("/cuisines", methods=['GET'])
 def cuisines():
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             cursor.execute("SELECT * from categories")
             data = cursor.fetchall()
@@ -57,7 +164,7 @@ def cuisines():
 
 @app.route("/cuisines/<cid>", methods=['GET'])
 def getRes(cid):
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             cursor.execute(("SELECT username from search WHERE cuisine_id = %s"), (cid))
             data = cursor.fetchall()
@@ -73,7 +180,7 @@ def getRes(cid):
 
 @app.route("/home/cuisines/<id>", methods=['GET'])
 def restaurants(id):
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             username_session = escape(session['username']).capitalize()
             username_id = escape(session['id'])
@@ -86,7 +193,7 @@ def restaurants(id):
 
 @app.route("/cuisines/<cid>/<rid>", methods=['GET'])
 def getMenu(cid, rid):
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             cursor.execute(("SELECT * from menu WHERE username = %s"), (rid))
             data = cursor.fetchall()
@@ -96,7 +203,7 @@ def getMenu(cid, rid):
 
 @app.route("/home/cuisines/<cid>/<username>", methods=['GET'])
 def menu(cid, username):
-    if(request.method == "GET"):
+    if request.method == "GET":
         if 'username' in session:
             username_session = escape(session['username']).capitalize()
             username_id = escape(session['id'])
@@ -149,11 +256,120 @@ def ureg():
                 data["error"] = "Username already exists"
                 return render_template("user_register.html", **data)
 
+@app.route("/home/cuisines/<cid>/<username>/cart", methods=['GET', 'POST'])
+def cart(cid, username):
+    if request.method == "GET":
+        if 'username' in session:
+            username_session = escape(session['username']).capitalize()
+            username_id = escape(session['id'])
+            fname = escape(session['fname'])
+            cursor.execute(("SELECT cname from categories where cuisine_id=%s"), (cid))
+            data = cursor.fetchone()
+            cursor1 = db.cursor()
+            cursor1.execute(("SELECT name from restaurants WHERE username=%s"), (username))
+            data1 = cursor1.fetchone()
+            if data is None or data1 is None:
+                return "Record doesn't exists in table"
+            else:
+                return render_template("cart.html", res_uname= username, res_name=list(data1)[0], cuisine_id = cid, cuisine_name=list(data)[0], fname=fname, username=username_session, userid=username_id)
+        else:
+            return redirect(url_for('login'))
+    elif request.method == "POST":
+        return "POST"
+
+@app.route("/home/cuisines/<cid>/<username>/checkout", methods=['GET', 'POST'])
+def checkout(cid, username):
+    if request.method == "GET":
+        if 'username' in session:
+            username_session = escape(session['username']).capitalize()
+            username_id = escape(session['id'])
+            fname = escape(session['fname'])
+            cursor.execute(("SELECT cname from categories where cuisine_id=%s"), (cid))
+            data = cursor.fetchone()
+            cursor1 = db.cursor()
+            cursor1.execute(("SELECT name from restaurants WHERE username=%s"), (username))
+            data1 = cursor1.fetchone()
+            if data is None or data1 is None:
+                return "Record doesn't exists in table"
+            else:
+                return render_template("checkout.html", res_uname= username, res_name=list(data1)[0], cuisine_id = cid, cuisine_name=list(data)[0], fname=fname, username=username_session, userid=username_id)
+        else:
+            return redirect(url_for('login'))
+    elif request.method == "POST":
+        return "POST"
+
+@app.route("/home/cuisines/<cid>/<res_uname>/order", methods=['POST'])
+def order(cid, res_uname):
+    if request.method == "POST":
+        iname = request.form['iname'].split(',')
+        iprice = request.form['iprice'].split(',')
+        iquan = request.form['iquan'].split(',')
+        fname = request.form['fname']
+        telephone = request.form['telephone']
+        address = request.form['address']
+        user_id = escape(session['id'])
+        query1 = ("INSERT INTO `order` "
+                   "(`user_id`, `res_uname`, `fname`, `telephone`, `address`, `status`) "
+                   "VALUES (%s, %s, %s, %s, %s, %s)")
+        cursor = db.cursor()
+        cursor.execute(query1, (user_id, res_uname, fname, telephone, address, "Acknowledged"))
+        db.commit()
+        cursor = db.cursor()
+        cursor.execute("SELECT `order_id` FROM `order` ORDER BY order_id DESC LIMIT 1;")
+        data = cursor.fetchone()
+        order_id = list(data)[0]
+        for einame,eiprice,eiquan in zip(iname, iprice, iquan):
+            if eiquan != "0":
+                cursor = db.cursor()
+                cursor.execute(("INSERT INTO `order_details` (`order_id`, `iname`, `iprice`, `iquan`) VALUES (%s, %s, %s, %s)"),(order_id, einame, eiprice, eiquan))
+                db.commit()
+        return "Order placed successfully"
+    else:
+        return "Invalid request"
+
+@app.route("/history", methods=['GET'])
+def getHistory():
+    if request.method == "GET":
+        if 'username' in session:
+            userid = escape(session['id'])
+            cursor.execute(("SELECT * from `order` WHERE `user_id` = %s"), (userid))
+            data = cursor.fetchall()
+            data2 = []
+            for t in data:
+                cursor.execute(("SELECT * from `order_details` WHERE `order_id` = %s"), (list(t)[5]))
+                temp = cursor.fetchall()
+                f = []
+                x = list(temp)
+                cursor1 = db.cursor()
+                cursor1.execute(("SELECT `name` from `restaurants` WHERE username = %s"),(list(t)[1]))
+                rname = list(cursor1.fetchone())[0]
+                for r in x:
+                    y = list(r)
+                    y.append(rname)
+                    f.append(y)
+                data2.append(f)
+            return Response(json.dumps(data2), mimetype='application/json')
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/home/order/history", methods=['GET', 'POST'])
+def history():
+    if request.method == "GET":
+        if 'username' in session:
+            username_session = escape(session['username']).capitalize()
+            username_id = escape(session['id'])
+            fname = escape(session['fname'])
+            return render_template("history.html", fname=fname, username=username_session, userid=username_id)
+        else:
+            return redirect(url_for('login'))
+    elif request.method == "POST":
+        return "POST"
+
 @app.route("/restaurant/register", methods=['GET', 'POST'])
 def rreg():
-    if(request.method == "GET"):
+    if request.method == "GET":
         return render_template('restaurant_register.html')
-    elif(request.method == "POST"):
+    elif request.method == "POST":
         rname = request.form['rname']
         raddress = request.form['raddress']
         username = request.form['username']

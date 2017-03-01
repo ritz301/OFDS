@@ -58,6 +58,10 @@
             margin: 40px;
             margin-bottom: 0px;
         }
+        .select-wrapper{
+            width: 10em;
+            left: 7em;
+        }
     </style>
 </head>
 <body>
@@ -71,47 +75,53 @@
   <div class="brand-logo"><i class="fa fa-user" aria-hidden="true"></i>Welcome {{fname}}</div>
   <div class="brand-logo" style="left: 550px;"><i class="fa fa-location-arrow" aria-hidden="true"></i> Kolkata</div>
   <ul class="right hide-on-med-and-down">
-    <li><a href="/home/order/history" title="View order history"> <i class="fa fa-history" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
+    <li><a href="/rhome" title="Home page"> <i class="fa fa-home" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
     <li><a href="/logout" title="Logout"> <i class="fa fa-power-off" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
   </ul>
 </div>
 </nav>
-<div class="container" style="padding-top: 50px;">
+<div class="container" style="padding-top: 10px;">
     <div class="panel-heading" style="text-align: center;">
-      <h3 class="text-primary" style="color: black;"><i class="fa fa-cutlery" aria-hidden="true"></i> Choose a category</h3>
+      <h3 class="text-primary" style="color: black;"><i class="fa fa-tachometer" aria-hidden="true"></i>&nbsp;&nbsp;All orders</h3>
     </div>
-    <div class="panel panel-default" style="text-align: center;">
-        <div class="row" style="padding: 10px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
-        </div>
-        <div class="row" style="padding: 10px; margin-top: -100px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
-        </div>
-        <div class="row"><br></div>
+    <div class="panel panel-default" style="max-height: 420px; padding-bottom: 20px;overflow-x: hidden; overflow-y: auto;">
+        <table id="content" class="striped centered responsive-table">
+        <thead>
+          <tr>
+              <th data-field="user">User ID</th>
+              <th data-field="order">Order ID</th>
+              <th data-field="iname">Item name</th>
+              <th data-field="status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tcontent">
+            <!-- Table content          -->
+        </tbody>
+        </table>
     </div>
 </div>
 </form> 
 </div>
 </body>
 <script type="text/javascript">
-    $.get("/cuisines", function( data ) {
-        var values = [], keys = [];
-        $.each(data, function(key,value){
-            keys.push(key);
-            values.push(value);
-        });
-        var i = 0;
-        $('.grid').each(function() {
-            $(this).html(values[i]);
-            $(this).attr("href", "/home/cuisines/"+keys[i]); 
-            i++;
-        });
+    $.get("/orders", function( data ) {
+        console.log(data);
+        var prev = "";
+        for(var i = 0; i < data.length; i++){
+            for(var j = 0; j < data[i].length; j++){
+                console.log(data[i][j]);
+                var k = "", k1 = "", k2="";
+                if(data[i][j][0] != prev){
+                    k = data[i][j][0];
+                    k1 = data[i][j][4];
+                    k2 = "<select><option value='1' selected>Acknowledged</option><option value='2'>Processing</option><option value='3'>Completed</option><option value='4'>Out for Delivery</option><option value='5'>Delivered</option></select>";
+                }
+                trow = "<tr><td>"+k1+"</td><td>"+ k +"</td><td>"+ data[i][j][1] +"</td><td>"+k2+"</td></tr>";
+                prev = data[i][j][0];
+                $("#tcontent").append(trow);
+            }
+            $('select').material_select();
+        }
     });
 </script>
 </html>

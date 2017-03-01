@@ -73,7 +73,7 @@
   <ul class="right hide-on-med-and-down">
     <li><a href="/home" title="Home page"> <i class="fa fa-home" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
     <li><a href="/home/order/history" title="View order history"> <i class="fa fa-history" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
-    <li><a href="javascript:void(0)" onclick="saveData();" title="View Cart"><i class="fa fa-shopping-cart" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
+    <li><a href="javascript:void(0)" onclick="saveData();" title="Proceed to checkout"> <i class="fa fa-cart-arrow-down"  style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
     <li><a href="/logout" title="Logout"> <i class="fa fa-power-off" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
   </ul>
 </div>
@@ -83,20 +83,15 @@
       <h3 class="text-primary" style="color: black;"><i class="fa fa-cutlery" aria-hidden="true"></i>&nbsp;&nbsp;{{res_name}}</h3>
     </div>
     <div class="panel panel-default" style="max-height: 420px; overflow-x: hidden; overflow-y: auto;">
-        <div class="row">
-            <div class="input-field col s4 offset-s4">
-                <select id="catdropdown">
-                  <option value="" disabled selected>Choose a category</option>
-                </select>
-            </div>
-        </div>
         <table id="content" class="striped centered responsive-table">
         <thead>
-          <tr>
-              <th data-field="name">Name</th>
-              <th data-field="price">Price</th>
-              <th data-field="quantity">Quantity</th>
-          </tr>
+            <tr>
+                <th data-field="cross"></th>
+                <th data-field="name">Name</th>
+                <th data-field="price">Price</th>
+                <th data-field="quantity">Quantity</th>
+                <th data-field="itot">Item total</th>
+            </tr>
         </thead>
         <tbody id="tcontent">
             <!-- Table content          -->
@@ -110,14 +105,11 @@
 </body>
 <script type="text/javascript">
     var j = 0;
-    var cid, cname, name, price, prev, optag, menu, quan;
-    cid = [];
-    name = [];
-    menu = [];
-    price = [];
-    cname = [];
-    quan = [];
-    prev = "";
+    var name, price, quan;
+    name = sessionStorage.getItem('name').split(',');
+    price = sessionStorage.getItem('price').split(',');
+    quan = sessionStorage.getItem('quan').split(',');
+    var xname = name.split(',');
     $("#total").html("Total = "+getTot());
     function saveData(){
         if(getTot() == 0){
@@ -127,11 +119,11 @@
         sessionStorage.setItem('name', name);
         sessionStorage.setItem('price', price);
         sessionStorage.setItem('quan', quan);
-        window.location='/home/cuisines/{{cuisine_id}}/{{res_uname}}/cart';
+        window.location='/home/cuisines/{{cuisine_id}}/{{res_uname}}/checkout';
     }
     function getTot(){
         var tot = 0;
-        for(var i = 0; i < menu.length; i++){
+        for(var i = 0; i < quan.length; i++){
             tot += price[i]*quan[i];
         }
         return tot;
@@ -140,40 +132,21 @@
         var f = $("input:focus").attr('data-id');
         var val = $("input:focus").val();
         quan[f] = val;
+        sessionStorage.setItem('quan', quan);
+        $("td[data-tot='" + f +"']").html(parseInt(price[f])*parseInt(quan[f]));
         $("#total").html("Total = "+getTot());
     }
-    $(document).ready(function() {
-        $.get("/cuisines/{{cuisine_id}}/{{res_uname}}", function( data ) {
-            menu = data;
-            var tname = [];
-            for (i = 0; i < data.length; i++) {
-                if(prev != data[i][5]){
-                    cid.push(i);
-                    cname.push(data[i][5]);
-                    j++;
-                }
-                tname.push(data[i][2]);
-                price[i] = data[i][3];
-                quan[i] = 0;
-                prev = data[i][5];
-            }
-            name = tname;
-            cid.push(i);
-            for(i = 0; i < j; i++){
-                optag = "<option value="+i+">"+cname[i]+"</option>";
-                $("#catdropdown").append(optag);
-            }
-            $('select').material_select();
-            $("#content").append('<div class="row"><br></div>');
-        });
-        $("#catdropdown").on('change', function() {
-            var p = parseInt($('option:selected', this).val()), trow, k;
-            $("#tcontent").find("tr").remove();
-            for(k = cid[p]; k < cid[p+1]; k++){
-                trow = "<tr><td>"+ menu[k][2] +"</td><td>"+ menu[k][3] +"</td><td><input data-id='"+k+"' style='width: 4em' min='0' type='number' class='validate' value='"+quan[k]+"' oninput='set()'></td></tr>";
-                $("#tcontent").append(trow);
-            }
-        });    
-    });
+    function removeItem(k){
+        quan[k] = 0;
+        sessionStorage.setItem('quan', quan);
+        $("tr[data-row='" + k +"']").remove();
+        $("#total").html("Total = "+getTot());
+    }
+    for(var k = 0; k < quan.length; k++){
+        if(quan[k] != "0"){
+            trow = "<tr data-row='"+k+"'><td>&nbsp;&nbsp;<a href='#' onclick='var r = window.confirm(\"Are you sure you want to remove this item?\");if(r){removeItem("+k+")}' style='color:#a93333;font-size: 1.5em;' title='Remove item'><i class=\"fa fa-times\" aria-hidden=\"true\"></i></a></td><td>"+ xname[k] +"</td><td>"+ price[k] +"</td><td><input data-id='"+k+"' style='width: 4em' min='0' type='number' class='validate' value='"+quan[k]+"' oninput='set()'></td><td data-tot='"+k+"'>"+parseInt(price[k])*parseInt(quan[k])+"</td></tr>";
+            $("#tcontent").append(trow);
+        }
+    }
 </script>
 </html>

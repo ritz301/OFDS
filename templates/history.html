@@ -71,47 +71,58 @@
   <div class="brand-logo"><i class="fa fa-user" aria-hidden="true"></i>Welcome {{fname}}</div>
   <div class="brand-logo" style="left: 550px;"><i class="fa fa-location-arrow" aria-hidden="true"></i> Kolkata</div>
   <ul class="right hide-on-med-and-down">
-    <li><a href="/home/order/history" title="View order history"> <i class="fa fa-history" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
+    <li><a href="/home" title="Home page"> <i class="fa fa-home" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
     <li><a href="/logout" title="Logout"> <i class="fa fa-power-off" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
   </ul>
 </div>
 </nav>
-<div class="container" style="padding-top: 50px;">
+<div class="container" style="padding-top: 10px;">
     <div class="panel-heading" style="text-align: center;">
-      <h3 class="text-primary" style="color: black;"><i class="fa fa-cutlery" aria-hidden="true"></i> Choose a category</h3>
+      <h3 class="text-primary" style="color: black;"><i class="fa fa-history" aria-hidden="true"></i>&nbsp;&nbsp;History</h3>
     </div>
-    <div class="panel panel-default" style="text-align: center;">
-        <div class="row" style="padding: 10px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
+    <div class="panel panel-default" style="max-height: 420px; overflow-x: hidden; overflow-y: auto;">
+        <div class="row">
+            <div class="input-field col s4 offset-s4">
+                <select id="catdropdown">
+                  <option value="" disabled selected>Choose a category</option>
+                </select>
+            </div>
         </div>
-        <div class="row" style="padding: 10px; margin-top: -100px;">
-          <a href="#" class="col s2 grid" style="margin-left: 90px; padding-top: 37px;">1</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;">2</a>
-          <a href="#" class="col s2 grid" style="padding-top: 37px;"">3</a>
-          <a href="#" class="col s2 grid"  style="padding-top: 37px;">4</a>
-        </div>
-        <div class="row"><br></div>
+        <table id="content" class="striped centered responsive-table">
+        <thead>
+          <tr>
+              <th data-field="order">Order ID</th>
+              <th data-field="rname">Restaurant</th>
+              <th data-field="iname">Item name</th>
+              <th data-field="price">Price</th>
+              <th data-field="quantity">Quantity</th>
+          </tr>
+        </thead>
+        <tbody id="tcontent">
+            <!-- Table content          -->
+        </tbody>
+        </table>
     </div>
 </div>
 </form> 
 </div>
 </body>
 <script type="text/javascript">
-    $.get("/cuisines", function( data ) {
-        var values = [], keys = [];
-        $.each(data, function(key,value){
-            keys.push(key);
-            values.push(value);
-        });
-        var i = 0;
-        $('.grid').each(function() {
-            $(this).html(values[i]);
-            $(this).attr("href", "/home/cuisines/"+keys[i]); 
-            i++;
-        });
+    $.get("/history", function( data ) {
+        var prev = "";
+        for(var i = 0; i < data.length; i++){
+            for(var j = 0; j < data[i].length; j++){
+                console.log(data[i][j]);
+                var k = "", k1 = "";
+                if(data[i][j][0] != prev){
+                    k = data[i][j][0];
+                    k1 = data[i][j][4];
+                }
+                trow = "<tr><td>"+ k +"</td><td>"+ k1 +"</td><td>"+data[i][j][1]+"</td><td>"+data[i][j][2]+"</td><td>"+data[i][j][3]+"</td></tr>";
+                prev = data[i][j][0];
+                $("#tcontent").append(trow);
+            }
+        }
     });
 </script>
 </html>

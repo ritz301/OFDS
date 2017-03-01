@@ -66,33 +66,48 @@
     <div class="panel-body" style="padding: 40px; padding-top: 20px;">
       <div class="row" style="text-align: center;"><span class="text-primary" style="font-size: 20px;"><i class="fa fa-user"></i> Login</span></div>
       <div class="row">
-          <div class="row">
-            <div class="input-field col s3 label">
-              <br>Username <font color="red">*</font>
-            </div>
-            <div class="input-field col s9">
-              <input id="email" type="text" name="username" oninput="" class="validate"  maxlength = "30" required>
-              <label for="email">Enter Username</label>
-            </div>
+        <div class="row">
+          <div class="input-field col s3 label">
+            <br>Username <font color="red">*</font>
           </div>
-          <div class="row">
-            <div class="input-field col s3 label">
-              <br>Password <font color="red">*</font>
-            </div>
-            <div class="input-field col s9">
-              <input id="pass1" name="password" type="password" class="validate"  maxlength = "30" required>
-              <label for="pass1">Enter Password</label>
-            </div>
-        </div>
+          <div class="input-field col s9">
+            <input id="email" type="text" name="username" oninput="" class="validate"  maxlength = "30" required>
+            <label for="email">Enter Username</label>
           </div>
-          <div class="panel-footer" align="center">
-          <button class="btn" type="submit" id="submit" name="signup">Login</button>
-          <br><br><hr><br><a class="btn" href="/user/register">User register</a>&nbsp;&nbsp;&nbsp;&nbsp;
-          <a class="btn" href="/restaurant/register">Restaurant register</a>
         </div>
-      </div>  
+        <div class="row">
+          <div class="input-field col s3 label">
+            <br>Password <font color="red">*</font>
+          </div>
+          <div class="input-field col s9">
+            <input id="pass1" name="password" type="password" class="validate"  maxlength = "30" required>
+            <label for="pass1">Enter Password</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s3 label">
+            <br>Login as
+          </div>
+          <div class="input-field col s9">
+            <p>
+              <input name="group1" type="radio" id="test1" value="1" checked/>
+              <label for="test1">User</label>
+            </p>
+            <p>
+              <input name="group1" type="radio" id="test2" value="2"/>
+              <label for="test2">Restaurant</label>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+    <div class="panel-footer" align="center">
+      <button class="btn" type="submit" id="submit" name="signup">Login</button>
+      <br><br><hr><br><a class="btn" href="/user/register">User register</a>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a class="btn" href="/restaurant/register">Restaurant register</a>
+      <br><br>
+    </div>
+  </div>  
 </form> 
 </div>
 </body>
