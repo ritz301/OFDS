@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Online Food Delivery System</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+     <link rel="shortcut icon" type="image/png" href="images/favicon.png"/>
+    <style type="text/css">
+        body {
+                background-color: #EEE;
+        }
+        .text-primary {
+            font-family: Roboto,Helvetica,Arial,sans-serif;
+                font-weight: 300;
+                color: #009688;
+        }
+        .panel {
+                border-radius: 2px;
+                border: 0;
+                -webkit-box-shadow: 0 1px 6px 0 rgba(0,0,0,.12),0 1px 6px 0 rgba(0,0,0,.12);
+                box-shadow: 0 1px 6px 0 rgba(0,0,0,.12),0 1px 6px 0 rgba(0,0,0,.12);
+                margin-bottom: 20px;
+                background-color: #fff;
+                font-size: 14px;
+        }
+        h3 {
+                font-size: 24px;
+        }
+        .panel-default>.panel-heading {
+                color: #333;
+                background-color: #f5f5f5;
+                border-color: #ddd;
+        }
+        .panel-heading {
+                padding: 10px 15px;
+                border-bottom: 1px solid transparent;
+                border-top-left-radius: 3px;
+                border-top-right-radius: 3px;
+        }
+        * {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+        }
+        .label{
+            font-size: 16px;
+                font-weight: 500;
+        }
+        .grid{
+            border: 1px solid #eee;
+            text-align: center;
+            line-height: 50px;
+            background-color: tomato;
+            height: 130px;
+            color: white;
+            margin: 40px;
+            margin-bottom: 0px;
+        }
+    </style>
+</head>
+<body>
+{% if error %}
+<script type="text/javascript">
+    alert("{{ error }}");
+</script>
+{% endif %}
+<nav>
+<div class="nav-wrapper" style="padding-left: 15px;">
+  <div class="brand-logo"><i class="fa fa-user" aria-hidden="true"></i>Welcome {{fname}}</div>
+  <div class="brand-logo" style="left: 550px;"><i class="fa fa-location-arrow" aria-hidden="true"></i> Kolkata</div>
+  <ul class="right hide-on-med-and-down">
+    <li><a href="/home/order/history" title="View order history"> <i class="fa fa-history" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
+    <li><a href="/logout" title="Logout"> <i class="fa fa-power-off" style="font-size: 1.5em;" aria-hidden="true"></i></a></li>
+  </ul>
+</div>
+</nav>
+<div class="container" style="padding-top: 50px; ">
+    <div class="panel-heading" style="text-align: center;">
+      <h3 class="text-primary" style="color: black;">Admin</h3>
+    </div>
+    <div class="panel panel-default" style="padding: 10px;text-align: center; max-height: 420px; overflow-y: auto; overflow-x: hidden;">
+      <div class="row">
+        <div class="input-field col s4 offset-s4">
+            <select id="catdropdown">
+              <option value="" disabled selected>Choose a table</option>
+              <option value="Users">Users</option>
+              <option value="Restaurants">Restaurants</option>
+            </select>
+        </div>
+      </div>
+    <div class="row">
+      <table class="striped centered responsive-table">
+      <thead id="head">
+          
+      </thead>
+      <tbody id="tcontent">
+          <!-- Table content          -->
+      </tbody>
+      </table>
+    </div>
+</form> 
+</div>
+</body>
+<script type="text/javascript">
+    $('select').material_select();
+    var users = [], restaurants = [];
+    $.get("/users", function( data ) {
+        users = data;
+        console.log(data);
+    });
+    $.get("/restaurants", function( data ) {
+        restaurants = data;
+        console.log(data);
+    });
+    function removeuser(k){
+        $("tr[data-row='" + k +"']").remove();
+        $.post( 
+          "/deleteuser",
+          { K: k
+          },
+          function(data) {
+            alert(data);
+          }
+        );
+    }
+    function removeres(k){
+        $("tr[data-row='" + k +"']").remove();
+        $.post( 
+          "/deleteres",
+          { K: k
+          },
+          function(data) {
+            alert(data);
+          }
+        );
+    }
+    $("#catdropdown").on('change', function() {
+        var p = $('option:selected', this).val(), trow, k;
+        $("#tcontent").find("tr").remove();
+        if(p == "Users"){
+          $("#head").find("tr").remove();
+          $("#head").append('<tr><th data-field="cross"></th><th data-field="id">ID</th><th data-field="fname">First Name</th><th data-field="lname">Last Name</th><th data-field="username">Username</th><th data-field="password">Password</th></tr>');
+          for(k = 0; k < users.length; k++){
+              trow = "<tr data-row='"+users[k][0]+"'><td>&nbsp;&nbsp;<a href='#' onclick='var r = window.confirm(\"Are you sure you want to remove this item from the menu?\");if(r){removeuser("+users[k][0]+")}' style='color:#a93333;font-size: 1.5em;' title='Remove item'><i class=\"fa fa-times\" aria-hidden=\"true\"></i></a></td><td>"+ users[k][0] +"</td><td>"+ users[k][1] +"</td><td>"+ users[k][2] +"</td><td>"+ users[k][3] +"</td><td>"+ users[k][4] +"</td></tr>";
+              $("#tcontent").append(trow);
+          }
+        }else if(p == "Restaurants"){
+          $("#head").find("tr").remove();
+          $("#head").append('<tr><th data-field="cross"></th><th data-field="username">Username</th><th data-field="pass">Password</th><th data-field="name">Restaurant</th><th data-field="address">Address</th><th data-field="rating">Rating</th></tr>');
+          for(k = 0; k < restaurants.length; k++){
+              trow = "<tr data-row='"+restaurants[k][0]+"'><td>&nbsp;&nbsp;<a href='#' onclick='var r1 = window.confirm(\"Are you sure you want to remove this restaurant from the menu?\");' style='color:#a93333;font-size: 1.5em;' title='Remove item'><i class=\"fa fa-times\" aria-hidden=\"true\"></i></a></td><td>"+ restaurants[k][0] +"</td><td>"+ restaurants[k][1] +"</td><td>"+ restaurants[k][2] +"</td><td>"+ restaurants[k][3] +"</td><td>"+ restaurants[k][5] +"</td></tr>";
+              $("#tcontent").append(trow);
+          }
+        }
+    });
+</script>
+</html>

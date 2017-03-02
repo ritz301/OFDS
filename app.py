@@ -1,6 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, escape, Response
-from flask_admin import Admin
-# from flask_admin.contrib.sqla import ModelView
 from flaskext.mysql import MySQL
 import json
  
@@ -14,10 +12,6 @@ mysql.init_app(app)
 db = mysql.connect()
 cursor = db.cursor()
 
-admin = Admin(app, name='microblog', template_mode='bootstrap3')
-# admin.add_view(ModelView(User, db.session))
-# admin.add_view(ModelView(Post, db.session))
-
 @app.route("/deleteitem", methods=['POST'])
 def delitem():
     if request.method == "POST":
@@ -26,6 +20,28 @@ def delitem():
             cursor.execute(("DELETE FROM `menu` WHERE `menu_id` = %s"),(k))
             db.commit()
             return "Item successfully removed"
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/deleteuser", methods=['POST'])
+def deluser():
+    if request.method == "POST":
+        if 'username' in session:
+            k = request.form['K']
+            cursor.execute(("DELETE FROM `users` WHERE `id` = %s"),(k))
+            db.commit()
+            return "User successfully removed"
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/deleteres", methods=['POST'])
+def delres():
+    if request.method == "POST":
+        if 'username' in session:
+            k = request.form['K']
+            cursor.execute(("DELETE FROM `restaurants` WHERE `username` = %s"),(k))
+            db.commit()
+            return "Restaurant successfully removed"
         else:
             return redirect(url_for('login'))
 
@@ -110,6 +126,33 @@ def getOrders():
         else:
             return redirect(url_for('login'))
 
+@app.route("/admin", methods=['GET', 'POST'])
+def admin():
+    if request.method == "GET":
+        return render_template('admin.html', error = None)
+    elif request.method == "POST":
+        error = None
+
+@app.route("/users", methods=['GET'])
+def users():
+    if request.method == "GET":
+        if 'username' in session:
+            cursor.execute("SELECT * from users")
+            data = cursor.fetchall()
+            return Response(json.dumps(data), mimetype='application/json')
+        else:
+            return redirect(url_for('login'))
+
+@app.route("/restaurants", methods=['GET'])
+def restaurants1():
+    if request.method == "GET":
+        if 'username' in session:
+            cursor.execute("SELECT * from restaurants")
+            data = cursor.fetchall()
+            return Response(json.dumps(data), mimetype='application/json')
+        else:
+            return redirect(url_for('login'))
+
 @app.route("/", methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
@@ -129,7 +172,10 @@ def login():
                 session['username'] = username
                 session['id'] = list(data)[0]
                 session['fname'] = list(data)[1]
-                return redirect(url_for('home'))
+                if username == "admin":
+                    return redirect(url_for('admin')) 
+                else:   
+                    return redirect(url_for('home'))
             else:
                 return render_template("login.html", error = error)
         else:
