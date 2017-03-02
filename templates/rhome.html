@@ -223,7 +223,7 @@
             var p = parseInt($('option:selected', this).val()), trow, k;
             $("#tcontent").find("tr").remove();
             for(k = cid[p]; k < cid[p+1]; k++){
-                trow = "<tr data-row='"+menu[k][0]+"'><td>&nbsp;&nbsp;<a href='#' onclick='var r = window.confirm(\"Are you sure you want to remove this item from the menu?\");if(r){removeItem("+k+")}' style='color:#a93333;font-size: 1.5em;' title='Remove item'><i class=\"fa fa-times\" aria-hidden=\"true\"></i></a></td><td>"+ name[k] +"</td><td>"+ price[k] +"</td></tr>";
+                trow = "<tr data-row='"+menu[k][0]+"'><td>&nbsp;&nbsp;<a href='#' onclick='var r = window.confirm(\"Are you sure you want to remove this item from the menu?\");if(r){removeItem("+menu[k][0]+")}' style='color:#a93333;font-size: 1.5em;' title='Remove item'><i class=\"fa fa-times\" aria-hidden=\"true\"></i></a></td><td>"+ name[k] +"</td><td>"+ price[k] +"</td></tr>";
                 $("#tcontent").append(trow);
             }
         });

@@ -105,7 +105,7 @@
 </body>
 <script type="text/javascript">
     $.get("/orders", function( data ) {
-        console.log(data);
+        // console.log(data);
         var prev = "";
         for(var i = 0; i < data.length; i++){
             for(var j = 0; j < data[i].length; j++){
@@ -114,11 +114,19 @@
                 if(data[i][j][0] != prev){
                     k = data[i][j][0];
                     k1 = data[i][j][4];
-                    k2 = "<select><option value='1' selected>Acknowledged</option><option value='2'>Processing</option><option value='3'>Completed</option><option value='4'>Out for Delivery</option><option value='5'>Delivered</option></select>";
+                    k2 = "<select class='selstatus' data-id='"+k+"'><option value='Acknowledged' selected>Acknowledged</option><option value='Processing'>Processing</option><option value='Completed'>Completed</option><option value='Out for Delivery'>Out for Delivery</option><option value='Delivered'>Delivered</option></select>";
                 }
                 trow = "<tr><td>"+k1+"</td><td>"+ k +"</td><td>"+ data[i][j][1] +"</td><td>"+k2+"</td></tr>";
-                prev = data[i][j][0];
                 $("#tcontent").append(trow);
+                if(data[i][j][0] != prev){
+                $(".selstatus").find("[data-id ='"+k+"']").on('change', function() {
+                    var status = $('option:selected', this).val(), trow, k;
+                    var order_id = $(this).attr('data-id');
+                    alert(status);
+                    alert(order_id);
+                });        
+                }
+                prev = data[i][j][0];
             }
             $('select').material_select();
         }

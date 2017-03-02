@@ -34,9 +34,9 @@ def additem():
             type1 = request.form['group1']
             cursor.execute(("INSERT into `menu` (`username`,`name`,`price`,`type`,`category`) VALUES (%s,%s,%s,%s,%s)"),(username, iname, iprice, type1, cat))
             db.commit()
-            username_id = escape(session['id'])
+            address = escape(session['address'])
             name = escape(session['name'])
-            return render_template('rhome.html', rname=name, username=username, userid=username_id, error="Item successfully added")
+            return render_template('rhome.html', rname=name, username=username, address=address, error="Item successfully added")
         else:
             return redirect(url_for('login'))
  
@@ -57,9 +57,9 @@ def rhome():
     if request.method == "GET":
         if 'username' in session:
             username_session = escape(session['username']).capitalize()
-            username_id = escape(session['id'])
+            address = escape(session['address'])
             name = escape(session['name'])
-            return render_template('rhome.html', rname=name, username=username_session, userid=username_id)
+            return render_template('rhome.html', rname=name, username=username_session, userid=address)
         else:
             return redirect(url_for('login'))
     elif request.method == "POST":
@@ -70,9 +70,9 @@ def orders():
     if request.method == "GET":
         if 'username' in session:
             username_session = escape(session['username'])
-            username_id = escape(session['id'])
+            address = escape(session['address'])
             name = escape(session['name'])
-            return render_template('orders.html', rname=name, username=username_session, userid=username_id)
+            return render_template('orders.html', rname=name, username=username_session, address=address)
         else:
             return redirect(url_for('login'))
     elif request.method == "POST":
@@ -93,11 +93,12 @@ def getOrders():
                 x = list(temp)
                 cursor1 = db.cursor()
                 cursor1.execute(("SELECT `user_id` from `order` WHERE `order_id` = %s"),(list(t)[5]))
-                rname = list(cursor1.fetchone())[0]
+                user_id = list(cursor1.fetchone())[0]
                 for r in x:
                     y = list(r)
-                    y.append(rname)
+                    y.append(user_id)
                     f.append(y)
+                print f
                 data2.append(f)
             return Response(json.dumps(data2), mimetype='application/json')
         else:
@@ -195,7 +196,7 @@ def restaurants(id):
 def getMenu(cid, rid):
     if request.method == "GET":
         if 'username' in session:
-            cursor.execute(("SELECT * from menu WHERE username = %s"), (rid))
+            cursor.execute(("SELECT * from menu WHERE username = %s ORDER BY category DESC"), (rid))
             data = cursor.fetchall()
             return Response(json.dumps(data), mimetype='application/json')
         else:
@@ -341,11 +342,15 @@ def getHistory():
                 f = []
                 x = list(temp)
                 cursor1 = db.cursor()
-                cursor1.execute(("SELECT `name` from `restaurants` WHERE username = %s"),(list(t)[1]))
+                cursor1.execute(("SELECT `name` from `restaurants` WHERE `username` = %s"),(list(t)[1]))
                 rname = list(cursor1.fetchone())[0]
+                cursor2 = db.cursor()
+                cursor2.execute(("SELECT `status` from `order` WHERE `user_id` = %s"),(userid))
+                pik = list(cursor2.fetchone())[0]
                 for r in x:
                     y = list(r)
                     y.append(rname)
+                    y.append(pik)
                     f.append(y)
                 data2.append(f)
             return Response(json.dumps(data2), mimetype='application/json')

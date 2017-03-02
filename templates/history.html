@@ -96,6 +96,7 @@
               <th data-field="iname">Item name</th>
               <th data-field="price">Price</th>
               <th data-field="quantity">Quantity</th>
+              <th data-field="status">Status</th>
           </tr>
         </thead>
         <tbody id="tcontent">
@@ -113,12 +114,13 @@
         for(var i = 0; i < data.length; i++){
             for(var j = 0; j < data[i].length; j++){
                 console.log(data[i][j]);
-                var k = "", k1 = "";
+                var k = "", k1 = "", k2 = "";
                 if(data[i][j][0] != prev){
                     k = data[i][j][0];
                     k1 = data[i][j][4];
+                    k2 = data[i][j][5];
                 }
-                trow = "<tr><td>"+ k +"</td><td>"+ k1 +"</td><td>"+data[i][j][1]+"</td><td>"+data[i][j][2]+"</td><td>"+data[i][j][3]+"</td></tr>";
+                trow = "<tr><td>"+ k +"</td><td>"+ k1 +"</td><td>"+data[i][j][1]+"</td><td>"+data[i][j][2]+"</td><td>"+data[i][j][3]+"</td><td>"+k2+"</td></tr>";
                 prev = data[i][j][0];
                 $("#tcontent").append(trow);
             }
