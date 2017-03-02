@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, escape, Response
+from flask_admin import Admin
+# from flask_admin.contrib.sqla import ModelView
 from flaskext.mysql import MySQL
 import json
  
@@ -11,6 +13,10 @@ app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 db = mysql.connect()
 cursor = db.cursor()
+
+admin = Admin(app, name='microblog', template_mode='bootstrap3')
+# admin.add_view(ModelView(User, db.session))
+# admin.add_view(ModelView(Post, db.session))
 
 @app.route("/deleteitem", methods=['POST'])
 def delitem():
