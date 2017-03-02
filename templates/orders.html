@@ -118,17 +118,25 @@
                 }
                 trow = "<tr><td>"+k1+"</td><td>"+ k +"</td><td>"+ data[i][j][1] +"</td><td>"+k2+"</td></tr>";
                 $("#tcontent").append(trow);
-                if(data[i][j][0] != prev){
-                $(".selstatus").find("[data-id ='"+k+"']").on('change', function() {
-                    var status = $('option:selected', this).val(), trow, k;
-                    var order_id = $(this).attr('data-id');
-                    alert(status);
-                    alert(order_id);
-                });        
-                }
                 prev = data[i][j][0];
             }
             $('select').material_select();
+            $(".selstatus").on('change', function() {
+                var status = $('option:selected', this).val(), trow, k;
+                var order_id = $(this).attr('data-id');
+                if (typeof order_id === "undefined") {
+                    alert("Item status updated");
+                    return;
+                }
+                $.post( 
+                  "/modifystatus",
+                  { status: status,
+                    order_id: order_id
+                  },
+                  function(data) {
+                  }
+                );
+            });        
         }
     });
 </script>

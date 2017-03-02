@@ -23,6 +23,18 @@ def delitem():
         else:
             return redirect(url_for('login'))
 
+@app.route("/modifystatus", methods=['POST'])
+def modifystatus():
+    if request.method == "POST":
+        if 'username' in session:
+            status = request.form['status']
+            order_id = request.form['order_id']
+            cursor.execute(("UPDATE `order` SET `status`= %s WHERE `order_id`=%s"),(status, order_id))
+            db.commit()
+            return "Item status updated"
+        else:
+            return redirect(url_for('login'))
+
 @app.route("/deleteuser", methods=['POST'])
 def deluser():
     if request.method == "POST":
@@ -397,7 +409,7 @@ def getHistory():
                 cursor1.execute(("SELECT `name` from `restaurants` WHERE `username` = %s"),(list(t)[1]))
                 rname = list(cursor1.fetchone())[0]
                 cursor2 = db.cursor()
-                cursor2.execute(("SELECT `status` from `order` WHERE `user_id` = %s"),(userid))
+                cursor2.execute(("SELECT `status` from `order` WHERE `order_id` = %s"),(list(t)[5]))
                 pik = list(cursor2.fetchone())[0]
                 for r in x:
                     y = list(r)

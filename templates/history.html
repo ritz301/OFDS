@@ -111,6 +111,7 @@
 <script type="text/javascript">
     $.get("/history", function( data ) {
         var prev = "";
+        console.log(data);
         for(var i = 0; i < data.length; i++){
             for(var j = 0; j < data[i].length; j++){
                 console.log(data[i][j]);
